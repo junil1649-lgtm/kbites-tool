@@ -1,0 +1,131 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DailyHint 작업대</title>
+  <style>
+    :root{--bg:#0b0f12;--panel:#0f1417;--muted:#9aa5b1;--accent:#6ee7b7}
+    html,body{height:100%;margin:0;background:var(--bg);color:#e6eef3;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial}
+    .container{max-width:980px;margin:24px auto;padding:20px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px}
+    h1{margin:0 0 12px;font-size:20px}
+    .top{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .tabs{display:flex;gap:8px}
+    .tab{padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.03);border-radius:8px;cursor:pointer}
+    .tab.active{background:var(--panel);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
+    textarea{width:100%;min-height:120px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#071018;color:inherit;resize:vertical}
+    .controls{display:flex;gap:8px;margin-top:8px}
+    button{background:#0b6; color:#032; border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.secondary{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
+    .shortcuts{display:flex;gap:8px;margin-top:12px}
+    .items{margin-top:12px}
+    .item{padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+    .item .text{flex:1;white-space:pre-wrap}
+    .item button{padding:6px 8px;border-radius:6px}
+    a.short{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);padding:8px 12px;border-radius:8px;text-decoration:none}
+    footer{margin-top:14px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top">
+      <h1>DailyHint 작업대</h1>
+      <div class="tabs">
+        <div class="tab active" data-channel="DailyHint">DailyHint</div>
+        <div class="tab" data-channel="K-Bites">K-Bites</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <textarea id="editor" placeholder="메모를 입력하세요..."></textarea>
+      <div class="controls">
+        <button id="saveBtn">메모 추가</button>
+        <button id="speakBtn" class="secondary">음성 생성·재생</button>
+        <button id="copyBtn" class="secondary">복사</button>
+        <button id="clearBtn" class="secondary">비우기</button>
+      </div>
+
+      <div class="shortcuts">
+        <a class="short" target="_blank" href="https://coupang-links.onrender.com/hintpan">힌트판</a>
+        <a class="short" target="_blank" href="https://www.blogger.com/blog/posts/7981330210827442119">블로그</a>
+        <a class="short" target="_blank" href="https://partners.coupang.com">쿠팡</a>
+        <a class="short" target="_blank" href="https://vrew.ai/ko/try/index.html?open=signIn">Vrew</a>
+        <a class="short" target="_blank" href="https://claude.ai">Claude</a>
+      </div>
+
+      <div class="items" id="items"></div>
+      <footer>소재 보관함은 브라우저의 localStorage에 저장됩니다.</footer>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const editor = document.getElementById('editor');
+    const saveBtn = document.getElementById('saveBtn');
+    const speakBtn = document.getElementById('speakBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const itemsEl = document.getElementById('items');
+    let channel = 'DailyHint';
+
+    function storageKey(ch){return `kbites_tool_store_${ch}`}
+
+    function loadItems(){
+      const raw = localStorage.getItem(storageKey(channel));
+      try{ return raw? JSON.parse(raw): [] }catch(e){return []}
+    }
+
+    function saveItems(arr){ localStorage.setItem(storageKey(channel), JSON.stringify(arr)) }
+
+    function render(){
+      const arr = loadItems();
+      itemsEl.innerHTML='';
+      arr.slice().reverse().forEach((text, idx)=>{
+        const i = document.createElement('div'); i.className='item';
+        const t = document.createElement('div'); t.className='text'; t.textContent = text;
+        const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='8px';
+        const copy = document.createElement('button'); copy.textContent='복사'; copy.onclick = ()=>{navigator.clipboard.writeText(text)};
+        const use = document.createElement('button'); use.textContent='불러오기'; use.onclick = ()=>{editor.value = text}
+        const del = document.createElement('button'); del.textContent='삭제'; del.onclick = ()=>{ arr.splice(arr.length-1-idx,1); saveItems(arr); render(); }
+        btns.appendChild(use); btns.appendChild(copy); btns.appendChild(del);
+        i.appendChild(t); i.appendChild(btns);
+        itemsEl.appendChild(i);
+      })
+    }
+
+    function switchChannel(chEl){
+      tabs.forEach(t=>t.classList.remove('active'));
+      chEl.classList.add('active');
+      channel = chEl.dataset.channel;
+      render();
+    }
+
+    tabs.forEach(t=> t.addEventListener('click', ()=> switchChannel(t)));
+
+    saveBtn.addEventListener('click', ()=>{
+      const v = editor.value.trim(); if(!v) return;
+      const arr = loadItems(); arr.push(v); saveItems(arr); editor.value=''; render();
+    })
+
+    copyBtn.addEventListener('click', ()=>{ navigator.clipboard.writeText(editor.value || '') })
+    clearBtn.addEventListener('click', ()=>{ editor.value=''; })
+
+    speakBtn.addEventListener('click', async ()=>{
+      const text = editor.value.trim(); if(!text) return alert('텍스트를 입력하세요');
+      speakBtn.disabled = true; speakBtn.textContent='생성중...';
+      try{
+        const res = await fetch('/api/voice', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+        if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error(err.error || res.statusText) }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = new Audio(url); a.play();
+        a.onended = ()=>{ URL.revokeObjectURL(url) }
+      }catch(e){ alert('음성 생성 실패: '+e.message) }
+      speakBtn.disabled = false; speakBtn.textContent='음성 생성·재생';
+    })
+
+    // 초기 렌더
+    render();
+  </script>
+</body>
+</html>
