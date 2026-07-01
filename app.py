@@ -65,9 +65,12 @@ def script():
         return {"error": "No topic provided"}, 400
 
     length_seconds = length if length in {'30', '45', '60', '90'} else '60'
+    print(f"/api/script channel={channel} topic={topic} length={length_seconds}")
 
     if channel == 'kbites':
         prompt = f"""
+Write everything in English. All output fields (title, description, narration, fixed_comment) must be in English.
+
 You are an expert short-form video script writer for overseas short-form video audiences.
 Create a concise and engaging English short-form content script for the topic: {topic}
 
@@ -80,7 +83,7 @@ Return ONLY valid JSON with exactly these keys and no other text:
 }}
 
 Requirements:
-- English language only for title, description, narration, and fixed_comment
+- Write everything in English. All output fields (title, description, narration, fixed_comment) must be in English.
 - The first sentence must be a strong hook using a question, twist, or surprising statement
 - Keep the audience curious until the end and make the script feel compelling
 - Make the narration about {length_seconds}s long
@@ -90,9 +93,12 @@ Requirements:
 - fixed_comment should be short and engaging
 - do not wrap the JSON in markdown code fences
 - do not include any extra commentary or explanation
+- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"..."}}
 """
     else:
         prompt = f"""
+한국어로 작성해 주세요. 모든 출력 필드(title, description, narration, fixed_comment)는 한국어여야 합니다.
+
 You are an expert short-form video script writer for Korean short videos.
 Create a concise and engaging Korean short-form content script for the topic: {topic}
 
@@ -105,7 +111,7 @@ Return ONLY valid JSON with exactly these keys and no other text:
 }}
 
 Requirements:
-- Korean language only for title, description, narration, and fixed_comment
+- 한국어로 작성해 주세요. 모든 출력 필드(title, description, narration, fixed_comment)는 한국어여야 합니다.
 - The first sentence must be a strong hook using a question, twist, or surprising statement
 - Keep the audience curious until the end and make the script feel compelling
 - Make the narration about 약 {length_seconds}초 분량
@@ -115,6 +121,7 @@ Requirements:
 - fixed_comment should be short and engaging
 - do not wrap the JSON in markdown code fences
 - do not include any extra commentary or explanation
+- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"..."}}
 """
 
     payload = {
@@ -159,11 +166,11 @@ Requirements:
 
     try:
         data = resp.json()
-        text_blocks = []
-        for block in data.get('content', []):
-            if block.get('type') == 'text':
-                text_blocks.append(block.get('text', ''))
-        raw_text = ''.join(text_blocks).strip()
+        content_blocks = data.get('content', [])
+        text_blocks = [block.get('text', '') for block in content_blocks if block.get('type') == 'text']
+        raw_text = ''
+        if text_blocks:
+            raw_text = text_blocks[-1].strip()
 
         if raw_text.startswith('```'):
             raw_text = raw_text.strip('`').strip()
