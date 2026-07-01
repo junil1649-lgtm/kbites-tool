@@ -345,6 +345,7 @@
         <div class="input-row" style="margin-top:4px;">
           <button id="copyScriptBtn" class="btn-secondary" type="button">대본복사</button>
           <button id="sendToVoiceBtn" class="btn-secondary" type="button">음성칸으로 보내기</button>
+          <button id="translateScriptBtn" class="btn-secondary" type="button">영어 번역</button>
         </div>
         <div class="status" id="scriptStatus">대본을 생성해 보세요.</div>
       </section>
@@ -431,6 +432,7 @@
     const scriptEnglishBlock = document.getElementById('scriptEnglishBlock');
     const copyScriptBtn = document.getElementById('copyScriptBtn');
     const sendToVoiceBtn = document.getElementById('sendToVoiceBtn');
+    const translateScriptBtn = document.getElementById('translateScriptBtn');
 
     let channel = 'dailyhint';
     let currentScript = null;
@@ -629,11 +631,11 @@
         scriptDescription.textContent = result.description || '';
         scriptNarration.textContent = result.narration || '';
         scriptComment.textContent = result.fixed_comment || '';
-        scriptTitleEn.textContent = result.title_en || '';
-        scriptDescriptionEn.textContent = result.description_en || '';
-        scriptNarrationEn.textContent = result.narration_en || '';
-        scriptCommentEn.textContent = result.fixed_comment_en || '';
-        scriptEnglishBlock.style.display = channel === 'kbites' ? 'block' : 'none';
+        scriptTitleEn.textContent = '';
+        scriptDescriptionEn.textContent = '';
+        scriptNarrationEn.textContent = '';
+        scriptCommentEn.textContent = '';
+        scriptEnglishBlock.style.display = 'none';
         scriptResult.style.display = 'flex';
         scriptStatus.textContent = '대본 생성 완료';
       } catch (error) {
@@ -658,6 +660,44 @@
       scriptCommentEn.textContent = '';
       currentScript = null;
       scriptStatus.textContent = '입력창이 비워졌습니다.';
+    });
+
+    translateScriptBtn.addEventListener('click', async () => {
+      if (!currentScript) return;
+
+      translateScriptBtn.disabled = true;
+      translateScriptBtn.textContent = '번역 중...';
+      scriptStatus.textContent = '영어 번역을 생성하는 중입니다.';
+
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: currentScript.title || '',
+            description: currentScript.description || '',
+            narration: currentScript.narration || '',
+            fixed_comment: currentScript.fixed_comment || ''
+          })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || '영어 번역 실패');
+        }
+
+        scriptTitleEn.textContent = result.title_en || '';
+        scriptDescriptionEn.textContent = result.description_en || '';
+        scriptNarrationEn.textContent = result.narration_en || '';
+        scriptCommentEn.textContent = result.fixed_comment_en || '';
+        scriptEnglishBlock.style.display = 'block';
+        scriptStatus.textContent = '영어 번역 완료';
+      } catch (error) {
+        scriptStatus.textContent = `영어 번역 실패: ${error.message}`;
+      } finally {
+        translateScriptBtn.disabled = false;
+        translateScriptBtn.textContent = '영어 번역';
+      }
     });
 
     copyScriptBtn.addEventListener('click', async () => {

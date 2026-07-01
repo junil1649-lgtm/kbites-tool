@@ -108,49 +108,8 @@ def script():
     length_seconds = length if length in {'30', '45', '60', '90'} else '60'
     print(f"/api/script channel={channel} topic={topic} length={length_seconds}")
 
-    if channel == 'kbites':
-        prompt = f"""
-First create a Korean short-form video script for the topic: {topic}.
-Then create English translations for each of the four fields.
-
-Return ONLY valid JSON with exactly these keys and no other text:
-{{
-  "title": "...",
-  "description": "...",
-  "narration": "...",
-  "fixed_comment": "...",
-  "title_en": "...",
-  "description_en": "...",
-  "narration_en": "...",
-  "fixed_comment_en": "..."
-}}
-
-Requirements:
-- The Korean fields (title, description, narration, fixed_comment) must be in Korean.
-- The English fields (title_en, description_en, narration_en, fixed_comment_en) must be in English.
-- Treat the audience as people who know little about Korea and are curious about it.
-- Write from the perspective of someone introducing Korea to foreigners, not from the perspective of a Korean speaking to other Koreans.
-- Avoid insider phrases like "우리", "우리 조상", "우리 김", or any Korean-only familiarity. Instead use neutral, explanatory phrasing such as "한국에서는", "한국인들은", "Korea is", "In Korea", and similar foreigner-friendly expressions.
-- Highlight surprising or interesting points that a foreign viewer would find fresh, such as customs, history, food culture, social habits, daily life, or unique contrasts.
-- The description field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in Korean starting with #.
-- The description_en field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in English starting with #.
-- The first sentence must be a strong hook using a question, twist, or surprising statement.
-- Keep the audience curious until the end and make the script feel compelling.
-- Make the narration about {length_seconds}s long.
-- Base the content on verified facts when possible, using web search context and avoiding made-up claims.
-- The Korean version should be catchy and natural for an overseas audience learning about Korea.
-- The English version should be catchy and natural for an overseas audience.
-- Do not wrap the JSON in markdown code fences.
-- Do not include any extra commentary or explanation.
-- Output ONLY the raw JSON object. No explanation before or after. No markdown code fences.
-- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"...","title_en":"...","description_en":"...","narration_en":"...","fixed_comment_en":"..."}}
-"""
-    else:
-        prompt = f"""
-한국어로 작성해 주세요. 모든 출력 필드(title, description, narration, fixed_comment)는 한국어여야 합니다.
-
-You are an expert short-form video script writer for Korean short videos.
-Create a concise and engaging Korean short-form content script for the topic: {topic}
+    prompt = f"""
+Create a Korean short-form video script for the topic: {topic}.
 
 Return ONLY valid JSON with exactly these keys and no other text:
 {{
@@ -161,17 +120,16 @@ Return ONLY valid JSON with exactly these keys and no other text:
 }}
 
 Requirements:
-- 한국어로 작성해 주세요. 모든 출력 필드(title, description, narration, fixed_comment)는 한국어여야 합니다.
+- All output fields must be in Korean.
+- If the channel is K-Bites, write from the perspective of someone introducing Korea to foreigners, not from the perspective of a Korean speaking to other Koreans.
+- Use an outsider-friendly tone that explains Korea in a fresh way for international viewers.
+- The first sentence must be a strong hook using a question, twist, or surprising statement.
+- Keep the audience curious until the end and make the script feel compelling.
+- Make the narration about 약 {length_seconds}초 분량.
 - The description field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in Korean starting with #.
-- The first sentence must be a strong hook using a question, twist, or surprising statement
-- Keep the audience curious until the end and make the script feel compelling
-- Make the narration about 약 {length_seconds}초 분량
-- Base the content on verified facts when possible, using web search context and avoiding made-up claims
-- title should be catchy and clickable
-- description should be natural and encourage comments
-- fixed_comment should be short and engaging
-- do not wrap the JSON in markdown code fences
-- do not include any extra commentary or explanation
+- Base the content on verified facts when possible, using web search context and avoiding made-up claims.
+- Do not wrap the JSON in markdown code fences.
+- Do not include any extra commentary or explanation.
 - Output ONLY the raw JSON object. No explanation before or after. No markdown code fences.
 - 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"..."}}
 """
@@ -243,23 +201,111 @@ Requirements:
             'title': parsed.get('title', ''),
             'description': parsed.get('description', ''),
             'narration': parsed.get('narration', ''),
-            'fixed_comment': parsed.get('fixed_comment', ''),
-            'title_en': parsed.get('title_en', ''),
-            'description_en': parsed.get('description_en', ''),
-            'narration_en': parsed.get('narration_en', ''),
-            'fixed_comment_en': parsed.get('fixed_comment_en', '')
+            'fixed_comment': parsed.get('fixed_comment', '')
         }
     except (json.JSONDecodeError, ValueError, TypeError):
         return {
             'title': '',
             'description': '',
             'narration': raw_text if 'raw_text' in locals() else 'No narration generated',
-            'fixed_comment': '',
-            'title_en': '',
-            'description_en': '',
-            'narration_en': '',
-            'fixed_comment_en': ''
+            'fixed_comment': ''
         }
+
+
+@app.route('/api/translate', methods=['POST'])
+def translate():
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        return {"error": "Missing ANTHROPIC_API_KEY"}, 500
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get('title') or '').strip()
+    description = (data.get('description') or '').strip()
+    narration = (data.get('narration') or '').strip()
+    fixed_comment = (data.get('fixed_comment') or '').strip()
+
+    if not all([title, description, narration, fixed_comment]):
+        return {"error": "Missing script fields"}, 400
+
+    prompt = f"""
+Translate the following Korean short-form video script fields into English.
+Do not create new content. Only translate the existing meaning.
+
+Return ONLY valid JSON with exactly these keys and no other text:
+{{
+  "title_en": "...",
+  "description_en": "...",
+  "narration_en": "...",
+  "fixed_comment_en": "..."
+}}
+
+Fields:
+title: {title}
+description: {description}
+narration: {narration}
+fixed_comment: {fixed_comment}
+
+Requirements:
+- Translate into natural English.
+- Keep the same meaning and tone.
+- The description_en field should contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in English starting with #.
+- Do not wrap the JSON in markdown code fences.
+- Do not include any extra commentary or explanation.
+- Output ONLY the raw JSON object. No explanation before or after. No markdown code fences.
+- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title_en":"...","description_en":"...","narration_en":"...","fixed_comment_en":"..."}}
+"""
+
+    payload = {
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 800,
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": prompt}]
+            }
+        ]
+    }
+
+    try:
+        resp = requests.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={
+                'x-api-key': api_key,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
+            json=payload,
+            timeout=60
+        )
+    except requests.RequestException as e:
+        return {"error": f"Request failed: {str(e)}"}, 502
+
+    if resp.status_code != 200:
+        try:
+            body = resp.json()
+        except ValueError:
+            body = {"error": resp.text}
+        return {"error": body.get('error', {}).get('message', resp.text)}, resp.status_code
+
+    try:
+        data = resp.json()
+        content_blocks = data.get('content', [])
+        text_blocks = [block.get('text', '') for block in content_blocks if block.get('type') == 'text']
+        raw_text = text_blocks[-1].strip() if text_blocks else ''
+        candidate = extract_json_object(raw_text)
+        if candidate:
+            parsed = json.loads(candidate)
+        else:
+            return {"error": "Failed to parse translation output"}, 502
+
+        return {
+            'title_en': parsed.get('title_en', ''),
+            'description_en': parsed.get('description_en', ''),
+            'narration_en': parsed.get('narration_en', ''),
+            'fixed_comment_en': parsed.get('fixed_comment_en', '')
+        }
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return {"error": "Failed to parse translation output"}, 502
 
 
 if __name__ == '__main__':
