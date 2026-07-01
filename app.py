@@ -77,7 +77,7 @@ Return ONLY valid JSON with exactly these keys and no other text:
 }}
 
 Requirements:
-- English language only
+- English language only for title, description, narration, and fixed_comment
 - Strong hook in the first sentence
 - narration should be about 40 to 60 seconds of spoken content
 - title should be catchy and clickable for a global audience
@@ -101,7 +101,7 @@ Return ONLY valid JSON with exactly these keys and no other text:
 }}
 
 Requirements:
-- Korean language
+- Korean language only for title, description, narration, and fixed_comment
 - Strong hook in the first sentence
 - narration should be about 40 to 60 seconds of spoken content
 - title should be catchy and clickable
@@ -165,10 +165,22 @@ Requirements:
             if raw_text.lower().startswith('json'):
                 raw_text = raw_text[4:].strip()
 
-        if not raw_text:
-            raise ValueError('No content returned')
+        if raw_text.startswith('{') and raw_text.endswith('}'):
+            parsed = json.loads(raw_text)
+        else:
+            start = raw_text.find('{')
+            end = raw_text.rfind('}')
+            if start != -1 and end != -1 and end > start:
+                candidate = raw_text[start:end + 1]
+                parsed = json.loads(candidate)
+            else:
+                return {
+                    'title': '',
+                    'description': '',
+                    'narration': raw_text or 'No narration generated',
+                    'fixed_comment': ''
+                }
 
-        parsed = json.loads(raw_text)
         return {
             'title': parsed.get('title', ''),
             'description': parsed.get('description', ''),
@@ -176,7 +188,12 @@ Requirements:
             'fixed_comment': parsed.get('fixed_comment', '')
         }
     except (json.JSONDecodeError, ValueError, TypeError):
-        return {"error": "Failed to parse script output from Anthropic"}, 502
+        return {
+            'title': '',
+            'description': '',
+            'narration': raw_text if 'raw_text' in locals() else 'No narration generated',
+            'fixed_comment': ''
+        }
 
 
 if __name__ == '__main__':
