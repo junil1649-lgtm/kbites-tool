@@ -1,14 +1,18 @@
 ﻿import json
 import os
 import requests
-from flask import Flask, Response, render_template, request, stream_with_context
+from flask import Flask, Response, make_response, render_template, request, stream_with_context
 
 app = Flask(__name__, template_folder='templates')
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    response = make_response(render_template('index.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @app.route('/api/voice', methods=['POST'])
