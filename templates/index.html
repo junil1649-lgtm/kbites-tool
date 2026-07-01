@@ -451,7 +451,7 @@
     }
 
     function storageKey(ch) {
-      return `kbites_tool_store_${ch}`;
+      return ch === 'kbites' ? 'ideas_kbites' : 'ideas_dailyhint';
     }
 
     function loadItems() {
