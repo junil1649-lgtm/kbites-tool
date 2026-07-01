@@ -68,7 +68,7 @@ def script():
 You are an expert short-form video script writer for overseas short-form video audiences.
 Create a concise and engaging English short-form content script for the topic: {topic}
 
-Return ONLY valid JSON with exactly these fields:
+Return ONLY valid JSON with exactly these keys and no other text:
 {{
   "title": "...",
   "description": "...",
@@ -84,14 +84,15 @@ Requirements:
 - description should be natural and encourage comments
 - fixed_comment should be short and engaging
 - use web search context when relevant
-- no markdown, no extra commentary
+- do not wrap the JSON in markdown code fences
+- do not include any extra commentary or explanation
 """
     else:
         prompt = f"""
 You are an expert short-form video script writer for Korean short videos.
 Create a concise and engaging Korean short-form content script for the topic: {topic}
 
-Return ONLY valid JSON with exactly these fields:
+Return ONLY valid JSON with exactly these keys and no other text:
 {{
   "title": "...",
   "description": "...",
@@ -107,18 +108,22 @@ Requirements:
 - description should be natural and encourage comments
 - fixed_comment should be short and engaging
 - use web search context when relevant
-- no markdown, no extra commentary
+- do not wrap the JSON in markdown code fences
+- do not include any extra commentary or explanation
 """
 
     payload = {
         "model": "claude-sonnet-4-6-20250514",
         "max_tokens": 800,
-        "betas": ["web_search_20250305"],
-        "tools": [{"type": "web_search_20250305", "name": "web_search"}],
         "messages": [
             {
                 "role": "user",
                 "content": [{"type": "text", "text": prompt}]
+            }
+        ],
+        "tools": [
+            {
+                "type": "web_search_20250305"
             }
         ]
     }

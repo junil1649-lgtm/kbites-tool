@@ -84,7 +84,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 18px;
       margin-top: 18px;
       align-items: start;
@@ -291,38 +291,6 @@
     </header>
 
     <main class="grid">
-      <section class="card" aria-labelledby="library-title">
-        <div class="card-header">
-          <div class="icon">🗂️</div>
-          <div>
-            <h2 id="library-title">소재 보관함</h2>
-            <p>채널별로 메모를 저장하고 바로 복사해 쓰세요.</p>
-          </div>
-        </div>
-        <div class="input-row">
-          <input id="memoInput" type="text" placeholder="메모를 입력하세요" />
-          <button id="saveBtn" class="btn-primary" type="button">추가</button>
-        </div>
-        <div class="items" id="items"></div>
-      </section>
-
-      <section class="card" aria-labelledby="voice-title">
-        <div class="card-header">
-          <div class="icon">🎙️</div>
-          <div>
-            <h2 id="voice-title">음성 생성</h2>
-            <p>텍스트를 넣으면 ElevenLabs 음성으로 재생됩니다.</p>
-          </div>
-        </div>
-        <textarea id="voiceInput" placeholder="음성으로 만들 내용을 입력하세요."></textarea>
-        <div class="input-row">
-          <button id="speakBtn" class="btn-primary" type="button">음성생성·재생</button>
-          <button id="copyVoiceBtn" class="btn-secondary" type="button">복사</button>
-        </div>
-        <div class="status" id="voiceStatus">준비됨</div>
-        <audio id="audioPlayer" controls></audio>
-      </section>
-
       <section class="card" aria-labelledby="script-title" style="grid-column: 1 / -1;">
         <div class="card-header">
           <div class="icon">✍️</div>
@@ -353,7 +321,39 @@
         <div class="status" id="scriptStatus">대본을 생성해 보세요.</div>
       </section>
 
-      <section class="card" aria-labelledby="shortcut-title" style="grid-column:1 / -1;">
+      <section class="card" aria-labelledby="voice-title" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <div class="icon">🎙️</div>
+          <div>
+            <h2 id="voice-title">음성 생성</h2>
+            <p>텍스트를 넣으면 ElevenLabs 음성으로 재생됩니다.</p>
+          </div>
+        </div>
+        <textarea id="voiceInput" placeholder="음성으로 만들 내용을 입력하세요."></textarea>
+        <div class="input-row">
+          <button id="speakBtn" class="btn-primary" type="button">음성생성·재생</button>
+          <button id="copyVoiceBtn" class="btn-secondary" type="button">복사</button>
+        </div>
+        <div class="status" id="voiceStatus">준비됨</div>
+        <audio id="audioPlayer" controls></audio>
+      </section>
+
+      <section class="card" aria-labelledby="library-title" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <div class="icon">🗂️</div>
+          <div>
+            <h2 id="library-title">소재 보관함</h2>
+            <p>채널별로 메모를 저장하고 바로 복사해 쓰세요.</p>
+          </div>
+        </div>
+        <div class="input-row">
+          <input id="memoInput" type="text" placeholder="메모를 입력하세요" />
+          <button id="saveBtn" class="btn-primary" type="button">추가</button>
+        </div>
+        <div class="items" id="items"></div>
+      </section>
+
+      <section class="card" aria-labelledby="shortcut-title" style="grid-column: 1 / -1;">
         <div class="card-header">
           <div class="icon">🔗</div>
           <div>
