@@ -128,13 +128,17 @@ Return ONLY valid JSON with exactly these keys and no other text:
 Requirements:
 - The Korean fields (title, description, narration, fixed_comment) must be in Korean.
 - The English fields (title_en, description_en, narration_en, fixed_comment_en) must be in English.
+- Treat the audience as people who know little about Korea and are curious about it.
+- Write from the perspective of someone introducing Korea to foreigners, not from the perspective of a Korean speaking to other Koreans.
+- Avoid insider phrases like "우리", "우리 조상", "우리 김", or any Korean-only familiarity. Instead use neutral, explanatory phrasing such as "한국에서는", "한국인들은", "Korea is", "In Korea", and similar foreigner-friendly expressions.
+- Highlight surprising or interesting points that a foreign viewer would find fresh, such as customs, history, food culture, social habits, daily life, or unique contrasts.
 - The description field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in Korean starting with #.
 - The description_en field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in English starting with #.
 - The first sentence must be a strong hook using a question, twist, or surprising statement.
 - Keep the audience curious until the end and make the script feel compelling.
 - Make the narration about {length_seconds}s long.
 - Base the content on verified facts when possible, using web search context and avoiding made-up claims.
-- The Korean version should be catchy and natural for Korean viewers.
+- The Korean version should be catchy and natural for an overseas audience learning about Korea.
 - The English version should be catchy and natural for an overseas audience.
 - Do not wrap the JSON in markdown code fences.
 - Do not include any extra commentary or explanation.
