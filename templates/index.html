@@ -138,6 +138,16 @@
       gap: 10px;
     }
 
+    select {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
     input[type="text"], textarea {
       width: 100%;
       border: 1px solid var(--border);
@@ -301,6 +311,12 @@
         </div>
         <input id="scriptTopicInput" type="text" placeholder="예: 짧은 영상 제목 주제" />
         <div class="input-row">
+          <select id="scriptLengthSelect" aria-label="대본 길이">
+            <option value="30">30초</option>
+            <option value="45">45초</option>
+            <option value="60" selected>60초</option>
+            <option value="90">90초</option>
+          </select>
           <button id="scriptBtn" class="btn-primary" type="button">대본생성</button>
           <button id="clearScriptBtn" class="btn-secondary" type="button">초기화</button>
         </div>
@@ -389,6 +405,7 @@
     const scriptTopicInput = document.getElementById('scriptTopicInput');
     const scriptBtn = document.getElementById('scriptBtn');
     const clearScriptBtn = document.getElementById('clearScriptBtn');
+    const scriptLengthSelect = document.getElementById('scriptLengthSelect');
     const scriptStatus = document.getElementById('scriptStatus');
     const scriptResult = document.getElementById('scriptResult');
     const scriptTitle = document.getElementById('scriptTitle');
@@ -398,11 +415,20 @@
     const copyScriptBtn = document.getElementById('copyScriptBtn');
     const sendToVoiceBtn = document.getElementById('sendToVoiceBtn');
 
-    let channel = 'DailyHint';
+    let channel = 'dailyhint';
     let currentScript = null;
 
     function normalizeChannel(value) {
-      return value === 'K-Bites' ? 'kbites' : 'dailyhint';
+      const normalized = (value || '').toString().trim().toLowerCase();
+      return normalized === 'k-bites' || normalized === 'kbites' || normalized === 'k_bites' ? 'kbites' : 'dailyhint';
+    }
+
+    function updateLengthLabels() {
+      const isEnglish = channel === 'kbites';
+      const labels = isEnglish ? ['30s', '45s', '60s', '90s'] : ['30초', '45초', '60초', '90초'];
+      Array.from(scriptLengthSelect.options).forEach((option, index) => {
+        option.textContent = labels[index];
+      });
     }
 
     function storageKey(ch) {
@@ -482,13 +508,15 @@
         tab.classList.toggle('active', active);
         tab.setAttribute('aria-selected', String(active));
       });
-      channel = nextChannel;
+      channel = normalizeChannel(nextChannel);
+      updateLengthLabels();
       memoInput.value = '';
       render();
-      voiceStatus.textContent = `${channel} 채널로 전환되었습니다.`;
+      voiceStatus.textContent = `${channel === 'kbites' ? 'K-Bites' : 'DailyHint'} 채널로 전환되었습니다.`;
     }
 
     tabs.forEach((tab) => tab.addEventListener('click', () => switchChannel(tab.dataset.channel)));
+    switchChannel('DailyHint');
 
     saveBtn.addEventListener('click', () => {
       const value = memoInput.value.trim();
@@ -559,7 +587,7 @@
         const response = await fetch('/api/script', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, channel: normalizeChannel(channel) })
+          body: JSON.stringify({ topic, channel, length: scriptLengthSelect.value })
         });
 
         const result = await response.json();

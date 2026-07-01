@@ -60,8 +60,11 @@ def script():
     data = request.get_json(silent=True) or {}
     topic = (data.get('topic') or '').strip()
     channel = (data.get('channel') or 'dailyhint').strip().lower()
+    length = (data.get('length') or '60').strip()
     if not topic:
         return {"error": "No topic provided"}, 400
+
+    length_seconds = length if length in {'30', '45', '60', '90'} else '60'
 
     if channel == 'kbites':
         prompt = f"""
@@ -78,12 +81,13 @@ Return ONLY valid JSON with exactly these keys and no other text:
 
 Requirements:
 - English language only for title, description, narration, and fixed_comment
-- Strong hook in the first sentence
-- narration should be about 40 to 60 seconds of spoken content
+- The first sentence must be a strong hook using a question, twist, or surprising statement
+- Keep the audience curious until the end and make the script feel compelling
+- Make the narration about {length_seconds}s long
+- Base the content on verified facts when possible, using web search context and avoiding made-up claims
 - title should be catchy and clickable for a global audience
 - description should be natural and encourage comments
 - fixed_comment should be short and engaging
-- use web search context when relevant
 - do not wrap the JSON in markdown code fences
 - do not include any extra commentary or explanation
 """
@@ -102,12 +106,13 @@ Return ONLY valid JSON with exactly these keys and no other text:
 
 Requirements:
 - Korean language only for title, description, narration, and fixed_comment
-- Strong hook in the first sentence
-- narration should be about 40 to 60 seconds of spoken content
+- The first sentence must be a strong hook using a question, twist, or surprising statement
+- Keep the audience curious until the end and make the script feel compelling
+- Make the narration about 약 {length_seconds}초 분량
+- Base the content on verified facts when possible, using web search context and avoiding made-up claims
 - title should be catchy and clickable
 - description should be natural and encourage comments
 - fixed_comment should be short and engaging
-- use web search context when relevant
 - do not wrap the JSON in markdown code fences
 - do not include any extra commentary or explanation
 """
