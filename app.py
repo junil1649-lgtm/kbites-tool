@@ -123,7 +123,9 @@ Requirements:
         ],
         "tools": [
             {
-                "type": "web_search_20250305"
+                "type": "web_search_20250305",
+                "name": "web_search",
+                "max_uses": 5
             }
         ]
     }
@@ -134,7 +136,8 @@ Requirements:
             headers={
                 'x-api-key': api_key,
                 'anthropic-version': '2023-06-01',
-                'content-type': 'application/json'
+                'content-type': 'application/json',
+                'anthropic-beta': 'web-search-2025-03-05'
             },
             json=payload,
             timeout=60
