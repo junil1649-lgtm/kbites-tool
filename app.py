@@ -55,12 +55,37 @@ def script():
 
     data = request.get_json(silent=True) or {}
     topic = (data.get('topic') or '').strip()
+    channel = (data.get('channel') or 'dailyhint').strip().lower()
     if not topic:
         return {"error": "No topic provided"}, 400
 
-    prompt = f"""
+    if channel == 'kbites':
+        prompt = f"""
+You are an expert short-form video script writer for overseas short-form video audiences.
+Create a concise and engaging English short-form content script for the topic: {topic}
+
+Return ONLY valid JSON with exactly these fields:
+{{
+  "title": "...",
+  "description": "...",
+  "narration": "...",
+  "fixed_comment": "..."
+}}
+
+Requirements:
+- English language only
+- Strong hook in the first sentence
+- narration should be about 40 to 60 seconds of spoken content
+- title should be catchy and clickable for a global audience
+- description should be natural and encourage comments
+- fixed_comment should be short and engaging
+- use web search context when relevant
+- no markdown, no extra commentary
+"""
+    else:
+        prompt = f"""
 You are an expert short-form video script writer for Korean short videos.
-Create a concise and engaging short-form content script for the topic: {topic}
+Create a concise and engaging Korean short-form content script for the topic: {topic}
 
 Return ONLY valid JSON with exactly these fields:
 {{
@@ -77,6 +102,7 @@ Requirements:
 - title should be catchy and clickable
 - description should be natural and encourage comments
 - fixed_comment should be short and engaging
+- use web search context when relevant
 - no markdown, no extra commentary
 """
 
