@@ -69,31 +69,35 @@ def script():
 
     if channel == 'kbites':
         prompt = f"""
-Write everything in English. All output fields (title, description, narration, fixed_comment) must be in English.
-
-You are an expert short-form video script writer for overseas short-form video audiences.
-Create a concise and engaging English short-form content script for the topic: {topic}
+First create a Korean short-form video script for the topic: {topic}.
+Then create English translations for each of the four fields.
 
 Return ONLY valid JSON with exactly these keys and no other text:
 {{
   "title": "...",
   "description": "...",
   "narration": "...",
-  "fixed_comment": "..."
+  "fixed_comment": "...",
+  "title_en": "...",
+  "description_en": "...",
+  "narration_en": "...",
+  "fixed_comment_en": "..."
 }}
 
 Requirements:
-- Write everything in English. All output fields (title, description, narration, fixed_comment) must be in English.
-- The first sentence must be a strong hook using a question, twist, or surprising statement
-- Keep the audience curious until the end and make the script feel compelling
-- Make the narration about {length_seconds}s long
-- Base the content on verified facts when possible, using web search context and avoiding made-up claims
-- title should be catchy and clickable for a global audience
-- description should be natural and encourage comments
-- fixed_comment should be short and engaging
-- do not wrap the JSON in markdown code fences
-- do not include any extra commentary or explanation
-- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"..."}}
+- The Korean fields (title, description, narration, fixed_comment) must be in Korean.
+- The English fields (title_en, description_en, narration_en, fixed_comment_en) must be in English.
+- The description field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in Korean starting with #.
+- The description_en field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in English starting with #.
+- The first sentence must be a strong hook using a question, twist, or surprising statement.
+- Keep the audience curious until the end and make the script feel compelling.
+- Make the narration about {length_seconds}s long.
+- Base the content on verified facts when possible, using web search context and avoiding made-up claims.
+- The Korean version should be catchy and natural for Korean viewers.
+- The English version should be catchy and natural for an overseas audience.
+- Do not wrap the JSON in markdown code fences.
+- Do not include any extra commentary or explanation.
+- 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"...","title_en":"...","description_en":"...","narration_en":"...","fixed_comment_en":"..."}}
 """
     else:
         prompt = f"""
@@ -112,6 +116,7 @@ Return ONLY valid JSON with exactly these keys and no other text:
 
 Requirements:
 - 한국어로 작성해 주세요. 모든 출력 필드(title, description, narration, fixed_comment)는 한국어여야 합니다.
+- The description field must contain a short body description of 2 to 3 sentences, then a newline, then exactly 10 relevant hashtags in Korean starting with #.
 - The first sentence must be a strong hook using a question, twist, or surprising statement
 - Keep the audience curious until the end and make the script feel compelling
 - Make the narration about 약 {length_seconds}초 분량
@@ -197,14 +202,22 @@ Requirements:
             'title': parsed.get('title', ''),
             'description': parsed.get('description', ''),
             'narration': parsed.get('narration', ''),
-            'fixed_comment': parsed.get('fixed_comment', '')
+            'fixed_comment': parsed.get('fixed_comment', ''),
+            'title_en': parsed.get('title_en', ''),
+            'description_en': parsed.get('description_en', ''),
+            'narration_en': parsed.get('narration_en', ''),
+            'fixed_comment_en': parsed.get('fixed_comment_en', '')
         }
     except (json.JSONDecodeError, ValueError, TypeError):
         return {
             'title': '',
             'description': '',
             'narration': raw_text if 'raw_text' in locals() else 'No narration generated',
-            'fixed_comment': ''
+            'fixed_comment': '',
+            'title_en': '',
+            'description_en': '',
+            'narration_en': '',
+            'fixed_comment_en': ''
         }
 
 
