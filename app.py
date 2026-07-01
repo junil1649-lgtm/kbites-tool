@@ -1,9 +1,50 @@
 ﻿import json
 import os
+import re
 import requests
 from flask import Flask, Response, make_response, render_template, request, stream_with_context
 
 app = Flask(__name__, template_folder='templates')
+
+
+def extract_json_object(text):
+    if not text:
+        return None
+
+    cleaned = text.strip()
+    if cleaned.startswith('```'):
+        cleaned = cleaned.strip('`').strip()
+        if cleaned.lower().startswith('json'):
+            cleaned = cleaned[4:].strip()
+
+    start = cleaned.find('{')
+    if start == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escape = False
+    for index in range(start, len(cleaned)):
+        char = cleaned[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif char == '\\':
+                escape = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+        elif char == '{':
+            depth += 1
+        elif char == '}':
+            depth -= 1
+            if depth == 0:
+                return cleaned[start:index + 1]
+
+    return None
 
 
 @app.route('/')
@@ -97,6 +138,7 @@ Requirements:
 - The English version should be catchy and natural for an overseas audience.
 - Do not wrap the JSON in markdown code fences.
 - Do not include any extra commentary or explanation.
+- Output ONLY the raw JSON object. No explanation before or after. No markdown code fences.
 - 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"...","title_en":"...","description_en":"...","narration_en":"...","fixed_comment_en":"..."}}
 """
     else:
@@ -126,6 +168,7 @@ Requirements:
 - fixed_comment should be short and engaging
 - do not wrap the JSON in markdown code fences
 - do not include any extra commentary or explanation
+- Output ONLY the raw JSON object. No explanation before or after. No markdown code fences.
 - 반드시 아래 JSON 형식으로만 응답하라. 다른 설명 절대 금지: {{"title":"...","description":"...","narration":"...","fixed_comment":"..."}}
 """
 
@@ -177,26 +220,20 @@ Requirements:
         if text_blocks:
             raw_text = text_blocks[-1].strip()
 
-        if raw_text.startswith('```'):
-            raw_text = raw_text.strip('`').strip()
-            if raw_text.lower().startswith('json'):
-                raw_text = raw_text[4:].strip()
-
-        if raw_text.startswith('{') and raw_text.endswith('}'):
-            parsed = json.loads(raw_text)
+        candidate = extract_json_object(raw_text)
+        if candidate:
+            parsed = json.loads(candidate)
         else:
-            start = raw_text.find('{')
-            end = raw_text.rfind('}')
-            if start != -1 and end != -1 and end > start:
-                candidate = raw_text[start:end + 1]
-                parsed = json.loads(candidate)
-            else:
-                return {
-                    'title': '',
-                    'description': '',
-                    'narration': raw_text or 'No narration generated',
-                    'fixed_comment': ''
-                }
+            return {
+                'title': '',
+                'description': '',
+                'narration': raw_text or 'No narration generated',
+                'fixed_comment': '',
+                'title_en': '',
+                'description_en': '',
+                'narration_en': '',
+                'fixed_comment_en': ''
+            }
 
         return {
             'title': parsed.get('title', ''),
