@@ -5,126 +5,594 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DailyHint 작업대</title>
   <style>
-    :root{--bg:#0b0f12;--panel:#0f1417;--muted:#9aa5b1;--accent:#6ee7b7}
-    html,body{height:100%;margin:0;background:var(--bg);color:#e6eef3;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial}
-    .container{max-width:980px;margin:24px auto;padding:20px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px}
-    h1{margin:0 0 12px;font-size:20px}
-    .top{display:flex;gap:12px;align-items:center;justify-content:space-between}
-    .tabs{display:flex;gap:8px}
-    .tab{padding:8px 12px;background:transparent;border:1px solid rgba(255,255,255,0.03);border-radius:8px;cursor:pointer}
-    .tab.active{background:var(--panel);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
-    textarea{width:100%;min-height:120px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#071018;color:inherit;resize:vertical}
-    .controls{display:flex;gap:8px;margin-top:8px}
-    button{background:#0b6; color:#032; border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    button.secondary{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
-    .shortcuts{display:flex;gap:8px;margin-top:12px}
-    .items{margin-top:12px}
-    .item{padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
-    .item .text{flex:1;white-space:pre-wrap}
-    .item button{padding:6px 8px;border-radius:6px}
-    a.short{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);padding:8px 12px;border-radius:8px;text-decoration:none}
-    footer{margin-top:14px;color:var(--muted);font-size:13px}
+    :root {
+      --bg: #e3f0e9;
+      --panel: #ffffff;
+      --panel-soft: #f5fbf8;
+      --text: #17362b;
+      --muted: #5f766d;
+      --accent: #1f8a5b;
+      --accent-soft: #dff4ea;
+      --border: #d7e7de;
+      --shadow: 0 16px 36px rgba(31, 138, 91, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 22px 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 1.65rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      transition: all 0.2s ease;
+    }
+
+    .tab.active {
+      color: white;
+      background: var(--accent);
+      box-shadow: 0 10px 20px rgba(31, 138, 91, 0.22);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 240px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.16s ease, opacity 0.16s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.7; cursor: wait; }
+
+    .btn-primary {
+      color: white;
+      background: var(--accent);
+    }
+
+    .btn-secondary {
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .btn-ghost {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+
+    .items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 250px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .item .text {
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.95rem;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .script-result {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel-soft);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .script-result .label {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .script-result .value {
+      white-space: pre-wrap;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shortcut {
+      text-decoration: none;
+      color: var(--text);
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 12px;
+      background: var(--panel-soft);
+    }
+
+    @media (max-width: 780px) {
+      .hero { flex-direction: column; align-items: flex-start; }
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top">
-      <h1>DailyHint 작업대</h1>
-      <div class="tabs">
-        <div class="tab active" data-channel="DailyHint">DailyHint</div>
-        <div class="tab" data-channel="K-Bites">K-Bites</div>
+  <div class="shell">
+    <header class="hero">
+      <div>
+        <h1>DailyHint 작업대</h1>
+        <p>소재를 쌓고, 대본을 만들고, 바로 음성까지 이어가는 작업 공간입니다.</p>
       </div>
-    </div>
-
-    <div style="margin-top:12px">
-      <textarea id="editor" placeholder="메모를 입력하세요..."></textarea>
-      <div class="controls">
-        <button id="saveBtn">메모 추가</button>
-        <button id="speakBtn" class="secondary">음성 생성·재생</button>
-        <button id="copyBtn" class="secondary">복사</button>
-        <button id="clearBtn" class="secondary">비우기</button>
+      <div class="tabs" role="tablist" aria-label="채널 선택">
+        <button class="tab active" data-channel="DailyHint" role="tab" aria-selected="true">DailyHint</button>
+        <button class="tab" data-channel="K-Bites" role="tab" aria-selected="false">K-Bites</button>
       </div>
+    </header>
 
-      <div class="shortcuts">
-        <a class="short" target="_blank" href="https://coupang-links.onrender.com/hintpan">힌트판</a>
-        <a class="short" target="_blank" href="https://www.blogger.com/blog/posts/7981330210827442119">블로그</a>
-        <a class="short" target="_blank" href="https://partners.coupang.com">쿠팡</a>
-        <a class="short" target="_blank" href="https://vrew.ai/ko/try/index.html?open=signIn">Vrew</a>
-        <a class="short" target="_blank" href="https://claude.ai">Claude</a>
-      </div>
+    <main class="grid">
+      <section class="card" aria-labelledby="library-title">
+        <div class="card-header">
+          <div class="icon">🗂️</div>
+          <div>
+            <h2 id="library-title">소재 보관함</h2>
+            <p>채널별로 메모를 저장하고 바로 복사해 쓰세요.</p>
+          </div>
+        </div>
+        <div class="input-row">
+          <input id="memoInput" type="text" placeholder="메모를 입력하세요" />
+          <button id="saveBtn" class="btn-primary" type="button">추가</button>
+        </div>
+        <div class="items" id="items"></div>
+      </section>
 
-      <div class="items" id="items"></div>
-      <footer>소재 보관함은 브라우저의 localStorage에 저장됩니다.</footer>
-    </div>
+      <section class="card" aria-labelledby="voice-title">
+        <div class="card-header">
+          <div class="icon">🎙️</div>
+          <div>
+            <h2 id="voice-title">음성 생성</h2>
+            <p>텍스트를 넣으면 ElevenLabs 음성으로 재생됩니다.</p>
+          </div>
+        </div>
+        <textarea id="voiceInput" placeholder="음성으로 만들 내용을 입력하세요."></textarea>
+        <div class="input-row">
+          <button id="speakBtn" class="btn-primary" type="button">음성생성·재생</button>
+          <button id="copyVoiceBtn" class="btn-secondary" type="button">복사</button>
+        </div>
+        <div class="status" id="voiceStatus">준비됨</div>
+        <audio id="audioPlayer" controls></audio>
+      </section>
+
+      <section class="card" aria-labelledby="script-title">
+        <div class="card-header">
+          <div class="icon">✍️</div>
+          <div>
+            <h2 id="script-title">대본 생성</h2>
+            <p>주제를 넣으면 Claude로 쇼츠용 대본을 생성해 줍니다.</p>
+          </div>
+        </div>
+        <input id="scriptTopicInput" type="text" placeholder="예: 짧은 영상 제목 주제" />
+        <div class="input-row">
+          <button id="scriptBtn" class="btn-primary" type="button">대본생성</button>
+          <button id="clearScriptBtn" class="btn-secondary" type="button">초기화</button>
+        </div>
+        <div class="script-result" id="scriptResult" style="display:none;">
+          <div class="label">제목</div>
+          <div class="value" id="scriptTitle"></div>
+          <div class="label">설명란</div>
+          <div class="value" id="scriptDescription"></div>
+          <div class="label">내레이션</div>
+          <div class="value" id="scriptNarration"></div>
+          <div class="label">고정댓글</div>
+          <div class="value" id="scriptComment"></div>
+        </div>
+        <div class="input-row" style="margin-top:4px;">
+          <button id="copyScriptBtn" class="btn-secondary" type="button">대본복사</button>
+          <button id="sendToVoiceBtn" class="btn-secondary" type="button">음성칸으로 보내기</button>
+        </div>
+        <div class="status" id="scriptStatus">대본을 생성해 보세요.</div>
+      </section>
+
+      <section class="card" aria-labelledby="shortcut-title" style="grid-column:1 / -1;">
+        <div class="card-header">
+          <div class="icon">🔗</div>
+          <div>
+            <h2 id="shortcut-title">바로가기</h2>
+            <p>자주 쓰는 도구와 페이지를 한눈에 열 수 있게 정리했습니다.</p>
+          </div>
+        </div>
+        <div class="shortcut-grid">
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://coupang-links.onrender.com/hintpan">힌트판</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://coupang-links.onrender.com/">링크관리</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://www.blogger.com/blog/posts/7981330210827442119">블로그</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://partners.coupang.com">쿠팡</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://vrew.ai/ko/try/index.html?open=signIn">Vrew</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://claude.ai">Claude</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://www.google.com">구글</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://studio.youtube.com/channel/UCbXCPl2vZTe9PS3OlPTAf0g">유튜브</a>
+          <a class="shortcut" target="_blank" rel="noreferrer" href="https://www.daum.net">다음</a>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script>
     const tabs = document.querySelectorAll('.tab');
-    const editor = document.getElementById('editor');
+    const memoInput = document.getElementById('memoInput');
     const saveBtn = document.getElementById('saveBtn');
-    const speakBtn = document.getElementById('speakBtn');
-    const copyBtn = document.getElementById('copyBtn');
-    const clearBtn = document.getElementById('clearBtn');
     const itemsEl = document.getElementById('items');
+    const voiceInput = document.getElementById('voiceInput');
+    const speakBtn = document.getElementById('speakBtn');
+    const copyVoiceBtn = document.getElementById('copyVoiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const scriptTopicInput = document.getElementById('scriptTopicInput');
+    const scriptBtn = document.getElementById('scriptBtn');
+    const clearScriptBtn = document.getElementById('clearScriptBtn');
+    const scriptStatus = document.getElementById('scriptStatus');
+    const scriptResult = document.getElementById('scriptResult');
+    const scriptTitle = document.getElementById('scriptTitle');
+    const scriptDescription = document.getElementById('scriptDescription');
+    const scriptNarration = document.getElementById('scriptNarration');
+    const scriptComment = document.getElementById('scriptComment');
+    const copyScriptBtn = document.getElementById('copyScriptBtn');
+    const sendToVoiceBtn = document.getElementById('sendToVoiceBtn');
+
     let channel = 'DailyHint';
+    let currentScript = null;
 
-    function storageKey(ch){return `kbites_tool_store_${ch}`}
+    function storageKey(ch) {
+      return `kbites_tool_store_${ch}`;
+    }
 
-    function loadItems(){
+    function loadItems() {
       const raw = localStorage.getItem(storageKey(channel));
-      try{ return raw? JSON.parse(raw): [] }catch(e){return []}
+      try { return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
     }
 
-    function saveItems(arr){ localStorage.setItem(storageKey(channel), JSON.stringify(arr)) }
-
-    function render(){
-      const arr = loadItems();
-      itemsEl.innerHTML='';
-      arr.slice().reverse().forEach((text, idx)=>{
-        const i = document.createElement('div'); i.className='item';
-        const t = document.createElement('div'); t.className='text'; t.textContent = text;
-        const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='8px';
-        const copy = document.createElement('button'); copy.textContent='복사'; copy.onclick = ()=>{navigator.clipboard.writeText(text)};
-        const use = document.createElement('button'); use.textContent='불러오기'; use.onclick = ()=>{editor.value = text}
-        const del = document.createElement('button'); del.textContent='삭제'; del.onclick = ()=>{ arr.splice(arr.length-1-idx,1); saveItems(arr); render(); }
-        btns.appendChild(use); btns.appendChild(copy); btns.appendChild(del);
-        i.appendChild(t); i.appendChild(btns);
-        itemsEl.appendChild(i);
-      })
+    function saveItems(items) {
+      localStorage.setItem(storageKey(channel), JSON.stringify(items));
     }
 
-    function switchChannel(chEl){
-      tabs.forEach(t=>t.classList.remove('active'));
-      chEl.classList.add('active');
-      channel = chEl.dataset.channel;
+    function render() {
+      const items = loadItems();
+      itemsEl.innerHTML = '';
+
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'status';
+        empty.textContent = '아직 저장된 소재가 없습니다.';
+        itemsEl.appendChild(empty);
+        return;
+      }
+
+      items.slice().reverse().forEach((text, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'item';
+
+        const body = document.createElement('div');
+        body.className = 'text';
+        body.textContent = text;
+
+        const actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        const scriptBtnEl = document.createElement('button');
+        scriptBtnEl.className = 'btn-ghost';
+        scriptBtnEl.type = 'button';
+        scriptBtnEl.textContent = '대본';
+        scriptBtnEl.addEventListener('click', () => {
+          voiceInput.value = text;
+          voiceStatus.textContent = '소재를 음성칸으로 불러왔습니다.';
+        });
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn-ghost';
+        copyBtn.type = 'button';
+        copyBtn.textContent = '복사';
+        copyBtn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(text);
+          voiceStatus.textContent = '복사 완료';
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-ghost';
+        deleteBtn.type = 'button';
+        deleteBtn.textContent = '삭제';
+        deleteBtn.addEventListener('click', () => {
+          const current = loadItems();
+          current.splice(current.length - 1 - index, 1);
+          saveItems(current);
+          render();
+        });
+
+        actions.append(scriptBtnEl, copyBtn, deleteBtn);
+        wrapper.append(body, actions);
+        itemsEl.appendChild(wrapper);
+      });
+    }
+
+    function switchChannel(nextChannel) {
+      tabs.forEach((tab) => {
+        const active = tab.dataset.channel === nextChannel;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      channel = nextChannel;
+      memoInput.value = '';
       render();
+      voiceStatus.textContent = `${channel} 채널로 전환되었습니다.`;
     }
 
-    tabs.forEach(t=> t.addEventListener('click', ()=> switchChannel(t)));
+    tabs.forEach((tab) => tab.addEventListener('click', () => switchChannel(tab.dataset.channel)));
 
-    saveBtn.addEventListener('click', ()=>{
-      const v = editor.value.trim(); if(!v) return;
-      const arr = loadItems(); arr.push(v); saveItems(arr); editor.value=''; render();
-    })
+    saveBtn.addEventListener('click', () => {
+      const value = memoInput.value.trim();
+      if (!value) return;
+      const items = loadItems();
+      items.push(value);
+      saveItems(items);
+      memoInput.value = '';
+      render();
+      voiceStatus.textContent = '소재가 저장되었습니다.';
+    });
 
-    copyBtn.addEventListener('click', ()=>{ navigator.clipboard.writeText(editor.value || '') })
-    clearBtn.addEventListener('click', ()=>{ editor.value=''; })
+    speakBtn.addEventListener('click', async () => {
+      const text = voiceInput.value.trim();
+      if (!text) {
+        voiceStatus.textContent = '텍스트를 먼저 입력해 주세요.';
+        return;
+      }
 
-    speakBtn.addEventListener('click', async ()=>{
-      const text = editor.value.trim(); if(!text) return alert('텍스트를 입력하세요');
-      speakBtn.disabled = true; speakBtn.textContent='생성중...';
-      try{
-        const res = await fetch('/api/voice', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
-        if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error(err.error || res.statusText) }
-        const blob = await res.blob();
+      speakBtn.disabled = true;
+      speakBtn.textContent = '생성 중...';
+      voiceStatus.textContent = '음성을 생성하고 있습니다.';
+
+      try {
+        const response = await fetch('/api/voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error || response.statusText || '요청 실패');
+        }
+
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
-        const a = new Audio(url); a.play();
-        a.onended = ()=>{ URL.revokeObjectURL(url) }
-      }catch(e){ alert('음성 생성 실패: '+e.message) }
-      speakBtn.disabled = false; speakBtn.textContent='음성 생성·재생';
-    })
+        audioPlayer.src = url;
+        audioPlayer.load();
+        await audioPlayer.play();
+        voiceStatus.textContent = '재생 중';
+        audioPlayer.onended = () => URL.revokeObjectURL(url);
+      } catch (error) {
+        voiceStatus.textContent = `음성 생성 실패: ${error.message}`;
+      } finally {
+        speakBtn.disabled = false;
+        speakBtn.textContent = '음성생성·재생';
+      }
+    });
 
-    // 초기 렌더
+    copyVoiceBtn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(voiceInput.value);
+      voiceStatus.textContent = '음성 텍스트가 복사되었습니다.';
+    });
+
+    scriptBtn.addEventListener('click', async () => {
+      const topic = scriptTopicInput.value.trim();
+      if (!topic) {
+        scriptStatus.textContent = '주제를 입력해 주세요.';
+        return;
+      }
+
+      scriptBtn.disabled = true;
+      scriptBtn.textContent = '생성 중...';
+      scriptStatus.textContent = 'Claude로 대본을 생성하는 중입니다.';
+
+      try {
+        const response = await fetch('/api/script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || '대본 생성 실패');
+        }
+
+        currentScript = result;
+        scriptTitle.textContent = result.title || '';
+        scriptDescription.textContent = result.description || '';
+        scriptNarration.textContent = result.narration || '';
+        scriptComment.textContent = result.fixed_comment || '';
+        scriptResult.style.display = 'flex';
+        scriptStatus.textContent = '대본 생성 완료';
+      } catch (error) {
+        scriptStatus.textContent = `대본 생성 실패: ${error.message}`;
+      } finally {
+        scriptBtn.disabled = false;
+        scriptBtn.textContent = '대본생성';
+      }
+    });
+
+    clearScriptBtn.addEventListener('click', () => {
+      scriptTopicInput.value = '';
+      scriptResult.style.display = 'none';
+      currentScript = null;
+      scriptStatus.textContent = '입력창이 비워졌습니다.';
+    });
+
+    copyScriptBtn.addEventListener('click', async () => {
+      if (!currentScript) return;
+      await navigator.clipboard.writeText(currentScript.narration || '');
+      scriptStatus.textContent = '대본이 복사되었습니다.';
+    });
+
+    sendToVoiceBtn.addEventListener('click', () => {
+      if (!currentScript) return;
+      voiceInput.value = currentScript.narration || '';
+      voiceStatus.textContent = '대본이 음성칸으로 전달되었습니다.';
+    });
+
     render();
   </script>
 </body>

@@ -1,6 +1,7 @@
-﻿import os
+﻿import json
+import os
 import requests
-from flask import Flask, request, Response, render_template, stream_with_context
+from flask import Flask, Response, render_template, request, stream_with_context
 
 app = Flask(__name__, template_folder='templates')
 
@@ -44,6 +45,100 @@ def voice():
         return Response(body, status=resp.status_code, content_type=ctype)
 
     return Response(stream_with_context(resp.iter_content(chunk_size=4096)), content_type=resp.headers.get('content-type', 'audio/mpeg'))
+
+
+@app.route('/api/script', methods=['POST'])
+def script():
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        return {"error": "Missing ANTHROPIC_API_KEY"}, 500
+
+    data = request.get_json(silent=True) or {}
+    topic = (data.get('topic') or '').strip()
+    if not topic:
+        return {"error": "No topic provided"}, 400
+
+    prompt = f"""
+You are an expert short-form video script writer for Korean short videos.
+Create a concise and engaging short-form content script for the topic: {topic}
+
+Return ONLY valid JSON with exactly these fields:
+{{
+  "title": "...",
+  "description": "...",
+  "narration": "...",
+  "fixed_comment": "..."
+}}
+
+Requirements:
+- Korean language
+- Strong hook in the first sentence
+- narration should be about 40 to 60 seconds of spoken content
+- title should be catchy and clickable
+- description should be natural and encourage comments
+- fixed_comment should be short and engaging
+- no markdown, no extra commentary
+"""
+
+    payload = {
+        "model": "claude-sonnet-4-6-20250514",
+        "max_tokens": 800,
+        "betas": ["web_search_20250305"],
+        "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": prompt}]
+            }
+        ]
+    }
+
+    try:
+        resp = requests.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={
+                'x-api-key': api_key,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
+            json=payload,
+            timeout=60
+        )
+    except requests.RequestException as e:
+        return {"error": f"Request failed: {str(e)}"}, 502
+
+    if resp.status_code != 200:
+        try:
+            body = resp.json()
+        except ValueError:
+            body = {"error": resp.text}
+        return {"error": body.get('error', {}).get('message', resp.text)}, resp.status_code
+
+    try:
+        data = resp.json()
+        text_blocks = []
+        for block in data.get('content', []):
+            if block.get('type') == 'text':
+                text_blocks.append(block.get('text', ''))
+        raw_text = ''.join(text_blocks).strip()
+
+        if raw_text.startswith('```'):
+            raw_text = raw_text.strip('`').strip()
+            if raw_text.lower().startswith('json'):
+                raw_text = raw_text[4:].strip()
+
+        if not raw_text:
+            raise ValueError('No content returned')
+
+        parsed = json.loads(raw_text)
+        return {
+            'title': parsed.get('title', ''),
+            'description': parsed.get('description', ''),
+            'narration': parsed.get('narration', ''),
+            'fixed_comment': parsed.get('fixed_comment', '')
+        }
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return {"error": "Failed to parse script output from Anthropic"}, 502
 
 
 if __name__ == '__main__':
